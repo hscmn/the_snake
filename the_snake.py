@@ -1,5 +1,7 @@
 import pygame
+
 import random
+
 from typing import List, Optional, Tuple
 
 CELL_SIZE = 20

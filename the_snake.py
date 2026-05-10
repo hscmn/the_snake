@@ -24,7 +24,7 @@ SNAKE_HEAD_COLOR = GREEN
 SNAKE_BODY_COLOR = DARK_GREEN
 BACKGROUND_COLOR = BOARD_BACKGROUND_COLOR
 
-DEFAULT_POSITION = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)  # ← ИСПРАВЛЕНО
+DEFAULT_POSITION = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
 DEFAULT_BODY_COLOR = BACKGROUND_COLOR
 DEFAULT_SNAKE_COLOUR = SNAKE_HEAD_COLOR
 FPS = 10
@@ -107,6 +107,16 @@ class Snake(GameObject):
     def get_head_position(self) -> Tuple[int, int]:
         return self.positions[0]
 
+    def get_segment_color(self, index: int) -> Tuple[int, int, int]:
+        """Змея теперь градиентная :)."""
+        t = index / max(1, self.length - 1)
+
+        r = int(SNAKE_HEAD_COLOR[0] * (1 - t) + DARK_GREEN[0] * t)
+        g = int(SNAKE_HEAD_COLOR[1] * (1 - t) + DARK_GREEN[1] * t)
+        b = int(SNAKE_HEAD_COLOR[2] * (1 - t) + DARK_GREEN[2] * t)
+
+        return (r, g, b)
+
     def update_direction(self, new_direction):
         if (
             new_direction[0] * -1 != self.direction[0]
@@ -126,9 +136,8 @@ class Snake(GameObject):
 
     def draw(self, screen: pg.Surface) -> None:
         for i, position in enumerate(self.positions):
-            color = self.body_color if i == 0 else SNAKE_BODY_COLOR
+            color = self.get_segment_color(i)
             self.draw_rect(screen, position, color)
-            self.draw_rect(screen, position, SNAKE_BODY_COLOR, 1)
 
     def reset(self) -> None:
         self.length = 1
@@ -153,6 +162,8 @@ def handle_keys(snake: Snake) -> bool:
                 snake.next_direction = LEFT
             elif event.key == pg.K_RIGHT:
                 snake.next_direction = RIGHT
+            if event.key == pg.K_ESCAPE:
+                return False
     return True
 
 
@@ -164,18 +175,15 @@ def main() -> None:
     pg.display.set_caption('Змейка - Изгиб Питона')
 
     snake = Snake()
-    apple = Apple(snake.positions)  # ← ИСПРАВЛЕНО
+    apple = Apple(snake.positions)
 
     running = True
     score = 0
 
     while running:
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                running = False
-            elif event.type == pg.KEYDOWN:
-                if event.key == pg.K_ESCAPE:
-                    running = False
+        if not handle_keys(snake):
+            break
+        pg.quit()
 
         if snake.next_direction is not None:
             snake.update_direction(snake.next_direction)
@@ -186,12 +194,12 @@ def main() -> None:
         if head in snake.positions[1:]:
             snake.reset()
             score = 0
-            apple.randomize_position(snake.positions)  # ← ИСПРАВЛЕНО
+            apple.randomize_position(snake.positions)
             continue
 
         if head == apple.position:
             snake.grow()
-            apple.randomize_position(snake.positions)  # ← ИСПРАВЛЕНО
+            apple.randomize_position(snake.positions)
             score += 1
 
         screen.fill(BOARD_BACKGROUND_COLOR)

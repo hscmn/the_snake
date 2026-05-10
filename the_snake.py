@@ -1,8 +1,7 @@
-import pygame
-
 import random
-
 from typing import List, Optional, Tuple
+
+import pygame
 
 CELL_SIZE = 20
 WIDTH = 640

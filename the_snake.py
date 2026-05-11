@@ -1,5 +1,5 @@
 import random
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import pygame as pg
 
@@ -21,12 +21,10 @@ DARK_GREEN = (0, 150, 0)
 
 APPLE_COLOR = RED
 SNAKE_HEAD_COLOR = GREEN
-SNAKE_BODY_COLOR = DARK_GREEN
 BACKGROUND_COLOR = BOARD_BACKGROUND_COLOR
+DEFAULT_BODY_COLOR = BACKGROUND_COLOR
 
 DEFAULT_POSITION = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
-DEFAULT_BODY_COLOR = BACKGROUND_COLOR
-DEFAULT_SNAKE_COLOUR = SNAKE_HEAD_COLOR
 FPS = 10
 
 
@@ -38,7 +36,6 @@ class GameObject:
         position: Tuple[int, int] = DEFAULT_POSITION,
         body_color: Tuple[int, int, int] = DEFAULT_BODY_COLOR
     ):
-        """Инициализирует базовый игровой объект."""
         self.position = position
         self.body_color = body_color
 
@@ -70,7 +67,6 @@ class Apple(GameObject):
         taken_position: List[Tuple[int, int]],
         color: Tuple[int, int, int] = APPLE_COLOR
     ):
-        """Инициализирует яблоко со случайной позицией и яблочным цветом."""
         super().__init__(body_color=color)
         self.randomize_position(taken_position)
 
@@ -78,7 +74,6 @@ class Apple(GameObject):
         self,
         taken_position: List[Tuple[int, int]]
     ) -> None:
-        """Устанавливает случайную позицию яблока на игровом поле."""
         while True:
             new_position = (
                 random.randint(0, GRID_WIDTH - 1) * GRID_SIZE,
@@ -89,26 +84,23 @@ class Apple(GameObject):
                 break
 
     def draw(self, screen: pg.Surface) -> None:
-        """Отрисовывает яблоко на игровой поверхности."""
         self.draw_rect(screen, self.position, self.body_color)
 
 
 class Snake(GameObject):
-    """Класс, представляющий змейку в игре."""
+    """Класс змейки."""
 
     def __init__(self) -> None:
         super().__init__(body_color=SNAKE_HEAD_COLOR)
         self.length = 1
-        self.positions: List[Tuple[int, int]]
-        self.positions = [self.position]
+        self.positions: List[Tuple[int, int]] = [self.position]
         self.direction = RIGHT
-        self.next_direction: Optional[Tuple[int, int]] = None
 
     def get_head_position(self) -> Tuple[int, int]:
         return self.positions[0]
 
     def get_segment_color(self, index: int) -> Tuple[int, int, int]:
-        """Змея теперь градиентная :)."""
+        """Градиент от яркой головы к тёмному хвосту."""
         t = index / max(1, self.length - 1)
 
         r = int(SNAKE_HEAD_COLOR[0] * (1 - t) + DARK_GREEN[0] * t)
@@ -117,7 +109,7 @@ class Snake(GameObject):
 
         return (r, g, b)
 
-    def update_direction(self, new_direction):
+    def update_direction(self, new_direction: Tuple[int, int]) -> None:
         if (
             new_direction[0] * -1 != self.direction[0]
             or new_direction[1] * -1 != self.direction[1]
@@ -130,7 +122,9 @@ class Snake(GameObject):
             (head[0] + self.direction[0] * GRID_SIZE) % SCREEN_WIDTH,
             (head[1] + self.direction[1] * GRID_SIZE) % SCREEN_HEIGHT
         )
+
         self.positions.insert(0, new_head)
+
         if len(self.positions) > self.length:
             self.positions.pop()
 
@@ -143,7 +137,6 @@ class Snake(GameObject):
         self.length = 1
         self.positions = [DEFAULT_POSITION]
         self.direction = RIGHT
-        self.next_direction = None
 
     def grow(self) -> None:
         self.length += 1
@@ -153,17 +146,19 @@ def handle_keys(snake: Snake) -> bool:
     for event in pg.event.get():
         if event.type == pg.QUIT:
             return False
-        elif event.type == pg.KEYDOWN:
-            if event.key == pg.K_UP:
-                snake.next_direction = UP
-            elif event.key == pg.K_DOWN:
-                snake.next_direction = DOWN
-            elif event.key == pg.K_LEFT:
-                snake.next_direction = LEFT
-            elif event.key == pg.K_RIGHT:
-                snake.next_direction = RIGHT
+
+        if event.type == pg.KEYDOWN:
             if event.key == pg.K_ESCAPE:
                 return False
+            elif event.key == pg.K_UP:
+                snake.update_direction(UP)
+            elif event.key == pg.K_DOWN:
+                snake.update_direction(DOWN)
+            elif event.key == pg.K_LEFT:
+                snake.update_direction(LEFT)
+            elif event.key == pg.K_RIGHT:
+                snake.update_direction(RIGHT)
+
     return True
 
 
@@ -172,32 +167,29 @@ def main() -> None:
     screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     clock = pg.time.Clock()
     font = pg.font.SysFont(None, 30)
+
     pg.display.set_caption('Змейка - Изгиб Питона')
 
     snake = Snake()
     apple = Apple(snake.positions)
+    score = 0
 
     running = True
-    score = 0
 
     while running:
         if not handle_keys(snake):
-            break
-        pg.quit()
+            running = False
+            continue
 
-        if snake.next_direction is not None:
-            snake.update_direction(snake.next_direction)
         snake.move()
-
         head = snake.get_head_position()
 
         if head in snake.positions[1:]:
             snake.reset()
             score = 0
             apple.randomize_position(snake.positions)
-            continue
 
-        if head == apple.position:
+        elif head == apple.position:
             snake.grow()
             apple.randomize_position(snake.positions)
             score += 1
@@ -205,11 +197,14 @@ def main() -> None:
         screen.fill(BOARD_BACKGROUND_COLOR)
         snake.draw(screen)
         apple.draw(screen)
+
         score_text = font.render(f'Счёт: {score}', True, GREEN)
         screen.blit(score_text, (10, 10))
 
         pg.display.update()
         clock.tick(FPS)
+
+    pg.quit()
 
 
 if __name__ == '__main__':

@@ -95,7 +95,7 @@ class Apple(GameObject):
             if new_position not in taken_position:
                 self.position = new_position
                 break
-            
+
     def draw(self, screen: pg.Surface) -> None:
         """Отрисовывает яблоко."""
         self.draw_rect(screen, self.position, self.body_color)

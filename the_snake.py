@@ -68,14 +68,18 @@ class GameObject:
 
 
 class Apple(GameObject):
-    """Яблоко в игре."""
+    """Класс яблока."""
 
     def __init__(
         self,
-        taken_position: List[Tuple[int, int]] = [],
+        taken_position: List[Tuple[int, int]] | None = None,
         color: Tuple[int, int, int] = APPLE_COLOR
     ):
         super().__init__(body_color=color)
+
+        if taken_position is None:
+            taken_position = []
+
         self.randomize_position(taken_position)
 
     def randomize_position(
@@ -91,7 +95,6 @@ class Apple(GameObject):
             if new_position not in taken_position:
                 self.position = new_position
                 break
-
     def draw(self, screen: pg.Surface) -> None:
         """Отрисовывает яблоко."""
         self.draw_rect(screen, self.position, self.body_color)

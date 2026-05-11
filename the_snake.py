@@ -28,6 +28,11 @@ DEFAULT_POSITION = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
 FPS = 10
 
 
+pg.init()
+screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+clock = pg.time.Clock()
+
+
 class GameObject:
     """Базовый класс для всех игровых объектов."""
 
@@ -67,7 +72,7 @@ class Apple(GameObject):
 
     def __init__(
         self,
-        taken_position: List[Tuple[int, int]],
+        taken_position: List[Tuple[int, int]] = [],
         color: Tuple[int, int, int] = APPLE_COLOR
     ):
         super().__init__(body_color=color)
@@ -149,7 +154,7 @@ class Snake(GameObject):
         self.direction = RIGHT
 
     def grow(self) -> None:
-        """Обрабатывает нажатия клавиш."""
+        """Увеличивает длину змейки."""
         self.length += 1
 
 
@@ -177,8 +182,6 @@ def handle_keys(snake: Snake) -> bool:
 def main() -> None:
     """Запускает основной игровой цикл."""
     pg.init()
-    screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    clock = pg.time.Clock()
     font = pg.font.SysFont(None, 30)
 
     pg.display.set_caption('Змейка - Изгиб Питона')

@@ -57,7 +57,7 @@ class GameObject:
             pg.Rect(position, (GRID_SIZE, GRID_SIZE)),
             width
         )
-
+        """Отрисовывает прямоугольник на игровой поверхности."""
 
 class Apple(GameObject):
     """Яблоко в игре."""
@@ -74,6 +74,7 @@ class Apple(GameObject):
         self,
         taken_position: List[Tuple[int, int]]
     ) -> None:
+        """Устанавливает случайную позицию яблока на поле."""
         while True:
             new_position = (
                 random.randint(0, GRID_WIDTH - 1) * GRID_SIZE,
@@ -84,6 +85,7 @@ class Apple(GameObject):
                 break
 
     def draw(self, screen: pg.Surface) -> None:
+        """Отрисовывает яблоко."""
         self.draw_rect(screen, self.position, self.body_color)
 
 
@@ -97,10 +99,11 @@ class Snake(GameObject):
         self.direction = RIGHT
 
     def get_head_position(self) -> Tuple[int, int]:
+        """Возвращает позицию головы змейки."""
         return self.positions[0]
 
     def get_segment_color(self, index: int) -> Tuple[int, int, int]:
-        """Градиент от яркой головы к тёмному хвосту."""
+        """Теперь змейка с градиентом :)"""
         t = index / max(1, self.length - 1)
 
         r = int(SNAKE_HEAD_COLOR[0] * (1 - t) + DARK_GREEN[0] * t)
@@ -110,6 +113,7 @@ class Snake(GameObject):
         return (r, g, b)
 
     def update_direction(self, new_direction: Tuple[int, int]) -> None:
+        """Обновляет направление движения змейки."""
         if (
             new_direction[0] * -1 != self.direction[0]
             or new_direction[1] * -1 != self.direction[1]
@@ -117,6 +121,7 @@ class Snake(GameObject):
             self.direction = new_direction
 
     def move(self) -> None:
+        """Перемещает змейку на одну клетку."""
         head = self.get_head_position()
         new_head = (
             (head[0] + self.direction[0] * GRID_SIZE) % SCREEN_WIDTH,
@@ -129,20 +134,24 @@ class Snake(GameObject):
             self.positions.pop()
 
     def draw(self, screen: pg.Surface) -> None:
+        """Отрисовывает змейку."""
         for i, position in enumerate(self.positions):
             color = self.get_segment_color(i)
             self.draw_rect(screen, position, color)
 
     def reset(self) -> None:
+        """Сбрасывает змейку в начальное состояние."""
         self.length = 1
         self.positions = [DEFAULT_POSITION]
         self.direction = RIGHT
 
     def grow(self) -> None:
+        """Обрабатывает нажатия клавиш."""
         self.length += 1
 
 
 def handle_keys(snake: Snake) -> bool:
+    """Обрабатывает нажатия клавиш."""
     for event in pg.event.get():
         if event.type == pg.QUIT:
             return False
@@ -163,6 +172,7 @@ def handle_keys(snake: Snake) -> bool:
 
 
 def main() -> None:
+    """Запускает основной игровой цикл."""
     pg.init()
     screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     clock = pg.time.Clock()

@@ -40,7 +40,7 @@ class GameObject:
         self.body_color = body_color
 
     def draw(self, screen: pg.Surface) -> None:
-        """Метод для отрисовки объекта на экране. Должен быть переопределён в наследниках."""
+        """Метод для отрисовки объекта на экране."""
         raise NotImplementedError(
             f'Метод draw не переопределён в классе {self.__class__.__name__}'
         )
@@ -59,7 +59,8 @@ class GameObject:
             pg.Rect(position, (GRID_SIZE, GRID_SIZE)),
             width
         )
-        """Если width=0, то рисуется заполненный прямоугольник, иначе - только рамка."""
+        """Если width=0, то рисуется заполненный прямоугольник."""
+
 
 class Apple(GameObject):
     """Яблоко в игре."""
